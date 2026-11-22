@@ -1,0 +1,32 @@
+name: Build Fabric mods
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - folder: fabric-1.20.1
+            java: '17'
+          - folder: fabric-1.21.1
+            java: '21'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build mod
+        working-directory: ${{ matrix.folder }}
+        run: gradle build --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shutofftrollmod-${{ matrix.folder }}
+          path: ${{ matrix.folder }}/build/libs/*.jar
